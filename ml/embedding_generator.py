@@ -3,14 +3,21 @@ import cv2
 import numpy as np
 from insightface.model_zoo import get_model
 
-# Absolute path to ArcFace ONNX model
-MODEL_PATH = os.path.expanduser(
-    "~/.insightface/models/buffalo_l/w600k_r50.onnx"
-)
+# -------------------------
+# Lazy-loaded ArcFace model
+# -------------------------
+_model = None
 
-# Load ArcFace model
-model = get_model(MODEL_PATH)
-model.prepare(ctx_id=0)
+def get_face_model():
+    """
+    Loads ArcFace (buffalo_l) model only once.
+    Safe for cloud deployment (Render).
+    """
+    global _model
+    if _model is None:
+        _model = get_model("buffalo_l")
+        _model.prepare(ctx_id=0)
+    return _model
 
 
 def generate_embeddings(face_dir):
@@ -19,6 +26,7 @@ def generate_embeddings(face_dir):
     Returns shape: (N, 512)
     """
     embeddings = []
+    model = get_face_model()
 
     for img_name in os.listdir(face_dir):
         img_path = os.path.join(face_dir, img_name)
@@ -27,12 +35,12 @@ def generate_embeddings(face_dir):
         if img is None:
             continue
 
-        # Convert BGR to RGB
+        # Convert BGR → RGB
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Extract embedding
         embedding = model.get_feat(img)          # (1, 512)
-        embedding = embedding.squeeze()           # (512,)
+        embedding = embedding.squeeze()          # (512,)
         embedding = embedding / np.linalg.norm(embedding)  # L2 normalize
 
         embeddings.append(embedding)
