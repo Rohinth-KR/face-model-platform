@@ -5,7 +5,7 @@ from faceapi import views as face_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
+    path("", face_views.home, name="home"),
     # 🔐 AUTH
     path("login/", auth_views.LoginView.as_view(), name="login"),
     path("logout/", face_views.logout_view, name="logout"),

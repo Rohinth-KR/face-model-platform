@@ -345,3 +345,10 @@ from django.shortcuts import redirect
 def logout_view(request):
     logout(request)
     return redirect("/signup/")
+
+from django.shortcuts import redirect
+
+def home(request):
+    if request.user.is_authenticated:
+        return redirect("/api/train/")
+    return redirect("/login/")
