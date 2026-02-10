@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Galleries • Face Model Platform</title>
+
+    <style>
+        :root {
+            --bg-dark: #0b0f1a;
+            --card-dark: #12182b;
+            --accent: #4cc9f0;
+            --text-main: #eaeaff;
+            --text-muted: #9aa4c7;
+            --danger: #ff6b6b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #11183a, var(--bg-dark));
+            color: var(--text-main);
+            padding: 30px;
+        }
+
+        /* ===== HEADER ===== */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .top-bar b {
+            color: var(--accent);
+        }
+
+        .top-bar a,
+        .top-bar button {
+            background: none;
+            border: none;
+            color: var(--accent);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 12px;
+        }
+
+        .top-bar a:hover,
+        .top-bar button:hover {
+            text-decoration: underline;
+        }
+
+        /* ===== PAGE TITLE ===== */
+        h2 {
+            margin-bottom: 20px;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== GALLERY CARD ===== */
+        .gallery-card {
+            background: linear-gradient(180deg, #151c36, var(--card-dark));
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 26px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            border: 1px solid rgba(76,201,240,0.15);
+        }
+
+        .gallery-card h3 {
+            margin-top: 0;
+            color: #ffffff;
+        }
+
+        /* ===== LINKS & BUTTONS ===== */
+        .action-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .action-link:hover {
+            text-decoration: underline;
+        }
+
+        button {
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: none;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            background: linear-gradient(135deg, #4cc9f0, #5eead4);
+            color: #08121f;
+            box-shadow: 0 8px 20px rgba(76,201,240,0.3);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 30px rgba(76,201,240,0.45);
+        }
+
+        .btn-danger {
+            background: rgba(255,107,107,0.15);
+            color: var(--danger);
+            border: 1px solid rgba(255,107,107,0.3);
+            box-shadow: none;
+        }
+
+        .btn-danger:hover {
+            background: rgba(255,107,107,0.25);
+            transform: none;
+        }
+
+        /* ===== PERSON LIST ===== */
+        ul {
+            list-style: none;
+            padding-left: 0;
+            margin: 12px 0;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 14px;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .muted {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .gallery-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- ===== TOP BAR ===== -->
+<div class="top-bar">
+    <div>
+        Logged in as <b>{{ request.user.username }}</b>
+    </div>
+
+    <div>
+        <a href="{% url 'train' %}">Train</a>
+
+        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+</div>
+
+<h2>My Galleries</h2>
+
+{% if galleries %}
+    {% for g in galleries %}
+        <div class="gallery-card">
+            <h3>{{ g.name }}</h3>
+
+            <a class="action-link"
+               href="{% url 'verify' %}?gallery_name={{ g.name }}">
+                🔍 Verify Face
+            </a>
+
+            {% if g.persons %}
+                <ul>
+                    {% for p in g.persons %}
+                        <li>
+                            {{ p }}
+
+                            <form method="post"
+                                  action="{% url 'delete_person' %}"
+                                  style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="gallery_name" value="{{ g.name }}">
+                                <input type="hidden" name="person_name" value="{{ p }}">
+                                <button class="btn-danger">❌ Delete</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="muted">No persons yet</p>
+            {% endif %}
+
+            <div class="gallery-actions">
+                <form method="get"
+                      action="{% url 'download_gallery' g.name %}">
+                    <button type="submit">⬇ Download Model</button>
+                </form>
+
+                <form method="post"
+                      action="{% url 'delete_gallery' g.name %}"
+                      onsubmit="return confirm('Delete gallery permanently?');">
+                    {% csrf_token %}
+                    <button class="btn-danger">Delete Gallery</button>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p class="muted">No galleries created yet.</p>
+{% endif %}
+
+</body>
+</html>

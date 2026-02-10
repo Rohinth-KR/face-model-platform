@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django
+db.sqlite3
+staticfiles/
+
+# ML data (VERY IMPORTANT)
+backend/ml/
+ml/data/
+ml/models/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Virtual env
+venv/
+.env

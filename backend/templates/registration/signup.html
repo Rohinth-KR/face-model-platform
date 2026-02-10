@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up • Face Model Platform</title>
+
+    <style>
+        :root {
+            --bg-dark: #0b0f1a;
+            --card-dark: #12182b;
+            --accent: #4cc9f0;
+            --text-main: #eaeaff;
+            --text-muted: #9aa4c7;
+            --danger: #ff6b6b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: radial-gradient(circle at top, #11183a, var(--bg-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-main);
+        }
+
+        /* ===== SIGNUP CARD ===== */
+        .signup-card {
+            width: 100%;
+            max-width: 420px;
+            background: linear-gradient(180deg, #151c36, var(--card-dark));
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+            border: 1px solid rgba(76, 201, 240, 0.15);
+        }
+
+        .signup-card h2 {
+            margin: 0 0 8px;
+            font-size: 26px;
+            text-align: center;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+        }
+
+        .signup-card p.subtitle {
+            margin: 0 0 28px;
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* ===== FORM ===== */
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: #0e1430;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(76,201,240,0.15);
+        }
+
+        /* ===== BUTTON ===== */
+        button {
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #08121f;
+            background: linear-gradient(135deg, #4cc9f0, #5eead4);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 10px 25px rgba(76,201,240,0.35);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 35px rgba(76,201,240,0.45);
+        }
+
+        /* ===== ERROR MESSAGE ===== */
+        .error {
+            background: rgba(255,107,107,0.15);
+            color: var(--danger);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            border: 1px solid rgba(255,107,107,0.25);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            margin-top: 22px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="signup-card">
+    <h2>Create Account</h2>
+    <p class="subtitle">Join and build your face model</p>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password1" placeholder="Password" required>
+        <input type="password" name="password2" placeholder="Confirm Password" required>
+
+        <button type="submit">Create Account</button>
+    </form>
+
+    <div class="footer">
+        Already have an account?
+        <a href="/login/">Login</a>
+    </div>
+</div>
+
+</body>
+</html>
