@@ -3,225 +3,570 @@
 <head>
     <meta charset="UTF-8">
     <title>My Galleries • Face Model Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Syne:wght@300;400;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
 
     <style>
         :root {
-            --bg-dark: #0b0f1a;
-            --card-dark: #12182b;
-            --accent: #4cc9f0;
-            --text-main: #eaeaff;
-            --text-muted: #9aa4c7;
-            --danger: #ff6b6b;
+            --bg: #020509;
+            --cyan: #00d4ff;
+            --green: #00ffb3;
+            --amber: #ffaa00;
+            --danger: #ff4466;
+            --text: #d6eeff;
+            --text-muted: #4a7a99;
+            --border: rgba(0, 212, 255, 0.12);
+            --border-active: rgba(0, 212, 255, 0.5);
         }
 
-        * {
-            box-sizing: border-box;
-            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            margin: 0;
             min-height: 100vh;
-            background: radial-gradient(circle at top, #11183a, var(--bg-dark));
-            color: var(--text-main);
-            padding: 30px;
+            background: var(--bg);
+            font-family: 'Syne', sans-serif;
+            color: var(--text);
+            overflow-x: hidden;
         }
 
-        /* ===== HEADER ===== */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
+        /* ── BACKGROUND ── */
+        .bg-grid {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridDrift 22s linear infinite;
+        }
+        @keyframes gridDrift { to { transform: translateY(40px); } }
+
+        .bg-radial {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0,212,255,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 35% 35% at 90% 85%, rgba(0,255,179,0.04) 0%, transparent 60%);
         }
 
-        .top-bar b {
-            color: var(--accent);
+        .scanline {
+            position: fixed; top: -2px; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            animation: scan 8s linear infinite; opacity: 0.2; pointer-events: none; z-index: 1;
+        }
+        @keyframes scan { to { top: 100vh; } }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px; height: 60px;
+            background: rgba(2,5,9,0.88);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            animation: fadeDown 0.6s ease both;
+        }
+        @keyframes fadeDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; }
+        .logo-mark {
+            width: 28px; height: 28px; border-radius: 6px;
+            border: 1px solid rgba(0,212,255,0.4);
+            background: rgba(0,212,255,0.06);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .logo-mark svg { width: 16px; height: 16px; }
+        .brand-name { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; color: #fff; letter-spacing: 2px; }
+        .brand-name span { color: var(--cyan); }
+
+        .nav-center { display: flex; align-items: center; gap: 4px; }
+        .nav-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--text-muted); text-decoration: none;
+            padding: 6px 14px; border-radius: 6px;
+            border: 1px solid transparent; transition: all 0.2s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--cyan); background: rgba(0,212,255,0.06); border-color: rgba(0,212,255,0.15);
         }
 
-        .top-bar a,
-        .top-bar button {
-            background: none;
-            border: none;
-            color: var(--accent);
-            font-size: 14px;
-            cursor: pointer;
-            padding: 0;
-            margin-left: 12px;
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .user-chip {
+            display: flex; align-items: center; gap: 8px;
+            padding: 5px 12px 5px 8px;
+            background: rgba(0,212,255,0.06);
+            border: 1px solid var(--border); border-radius: 20px;
+        }
+        .user-avatar {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; color: #020509;
+        }
+        .user-name { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text); letter-spacing: 1px; }
+
+        .logout-form { display: inline; }
+        .btn-logout {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--text-muted); background: none;
+            border: 1px solid var(--border); border-radius: 6px;
+            padding: 6px 12px; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-logout:hover { color: var(--danger); border-color: rgba(255,68,102,0.35); background: rgba(255,68,102,0.06); }
+
+        /* ── PAGE WRAP ── */
+        .page-wrap {
+            position: relative; z-index: 2;
+            max-width: 1100px; margin: 0 auto;
+            padding: 40px 24px 80px;
         }
 
-        .top-bar a:hover,
-        .top-bar button:hover {
-            text-decoration: underline;
+        /* ── PAGE HEADER ── */
+        .page-header {
+            display: flex; align-items: flex-end; justify-content: space-between;
+            margin-bottom: 36px;
+            animation: fadeUp 0.7s 0.1s ease both;
+        }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+        .eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+            color: var(--cyan); margin-bottom: 8px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--cyan); }
+
+        .page-header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 28px; font-weight: 700; color: #fff; letter-spacing: 1px;
+        }
+        .page-header h1 span { color: var(--cyan); }
+        .page-header p { margin-top: 8px; font-size: 14px; color: var(--text-muted); font-weight: 300; }
+
+        .btn-new-gallery {
+            font-family: 'Orbitron', monospace;
+            font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+            color: #020509; text-decoration: none;
+            padding: 11px 20px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            box-shadow: 0 0 24px rgba(0,212,255,0.25);
+            transition: transform 0.15s, box-shadow 0.15s;
+            display: flex; align-items: center; gap: 8px; white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .btn-new-gallery:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(0,212,255,0.4); }
+        .btn-new-gallery svg { width: 13px; height: 13px; }
+
+        /* ── STATS ROW ── */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 16px; margin-bottom: 36px;
+            animation: fadeUp 0.7s 0.2s ease both;
+        }
+        .stat-card {
+            background: rgba(6,13,24,0.8); border: 1px solid var(--border); border-radius: 14px;
+            padding: 18px 20px; position: relative; overflow: hidden;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .stat-card:hover { border-color: rgba(0,212,255,0.3); box-shadow: 0 0 30px rgba(0,212,255,0.07); }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-active), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .stat-card:hover::before { opacity: 1; }
+        .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; }
+        .stat-value { font-family: 'Orbitron', monospace; font-size: 28px; font-weight: 700; color: #fff; }
+        .stat-value span { color: var(--cyan); font-size: 13px; margin-left: 4px; }
+        .stat-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 300; }
+        .stat-icon { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; opacity: 0.1; }
+
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center; padding: 80px 20px;
+            animation: fadeUp 0.7s 0.3s ease both;
+        }
+        .empty-icon { margin: 0 auto 20px; width: 64px; height: 64px; opacity: 0.2; }
+        .empty-title {
+            font-family: 'Orbitron', monospace; font-size: 16px; font-weight: 600;
+            color: var(--text-muted); letter-spacing: 1px; margin-bottom: 10px;
+        }
+        .empty-sub { font-size: 13px; color: var(--text-muted); font-weight: 300; margin-bottom: 24px; }
+        .btn-empty {
+            font-family: 'Orbitron', monospace; font-size: 10px; font-weight: 700;
+            letter-spacing: 2px; text-transform: uppercase; color: #020509; text-decoration: none;
+            padding: 12px 24px; border-radius: 10px;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            box-shadow: 0 0 24px rgba(0,212,255,0.25);
+            transition: transform 0.15s, box-shadow 0.15s; display: inline-block;
+        }
+        .btn-empty:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(0,212,255,0.4); }
+
+        /* ── GALLERY GRID ── */
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
         }
 
-        /* ===== PAGE TITLE ===== */
-        h2 {
-            margin-bottom: 20px;
-            color: var(--accent);
-            letter-spacing: 0.5px;
-        }
-
-        /* ===== GALLERY CARD ===== */
+        /* ── GALLERY CARD ── */
         .gallery-card {
-            background: linear-gradient(180deg, #151c36, var(--card-dark));
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 26px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            border: 1px solid rgba(76,201,240,0.15);
+            background: rgba(6,13,24,0.9);
+            border: 1px solid var(--border);
+            border-radius: 18px; overflow: hidden;
+            position: relative;
+            transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+            animation: fadeUp 0.7s ease both;
+        }
+        .gallery-card:hover {
+            border-color: rgba(0,212,255,0.3);
+            box-shadow: 0 0 40px rgba(0,212,255,0.07), 0 20px 40px rgba(0,0,0,0.4);
+            transform: translateY(-3px);
         }
 
-        .gallery-card h3 {
-            margin-top: 0;
-            color: #ffffff;
+        /* Colored top strip */
+        .gallery-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--green));
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .gallery-card:hover::before { opacity: 1; }
+
+        /* Card header */
+        .gc-head {
+            padding: 20px 20px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+        }
+        .gc-head-left { display: flex; align-items: center; gap: 12px; }
+        .gc-avatar {
+            width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .gc-avatar svg { width: 20px; height: 20px; }
+        .gc-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 13px; font-weight: 700; color: #fff; letter-spacing: 0.5px;
+            word-break: break-all;
+        }
+        .gc-meta {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--text-muted); margin-top: 3px;
         }
 
-        /* ===== LINKS & BUTTONS ===== */
-        .action-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
+        /* Person count badge */
+        .person-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 1px;
+            padding: 4px 9px; border-radius: 12px; white-space: nowrap; flex-shrink: 0;
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.2);
+            color: var(--cyan);
         }
 
-        .action-link:hover {
-            text-decoration: underline;
+        /* Person list */
+        .gc-persons { padding: 14px 20px; }
+        .persons-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--text-muted); margin-bottom: 10px;
         }
 
-        button {
-            padding: 8px 14px;
-            border-radius: 10px;
-            border: none;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-            background: linear-gradient(135deg, #4cc9f0, #5eead4);
-            color: #08121f;
-            box-shadow: 0 8px 20px rgba(76,201,240,0.3);
+        .person-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .person-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 9px 12px; border-radius: 8px;
+            background: rgba(0,5,12,0.5);
+            border: 1px solid rgba(255,255,255,0.04);
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .person-item:hover { border-color: rgba(0,212,255,0.12); background: rgba(0,212,255,0.03); }
+
+        .person-info { display: flex; align-items: center; gap: 9px; }
+        .person-dot {
+            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+            background: var(--green); box-shadow: 0 0 6px rgba(0,255,179,0.5);
+        }
+        .person-name { font-size: 13px; color: var(--text); font-weight: 400; }
+
+        /* Delete person button */
+        .btn-del-person {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+            color: rgba(255,68,102,0.5); background: none;
+            border: 1px solid rgba(255,68,102,0.12); border-radius: 5px;
+            padding: 3px 8px; cursor: pointer; transition: all 0.2s;
+        }
+        .btn-del-person:hover { color: var(--danger); border-color: rgba(255,68,102,0.35); background: rgba(255,68,102,0.06); }
+
+        .no-persons {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: 1px; color: rgba(74,122,153,0.4);
+            padding: 10px 12px; border-radius: 8px;
+            border: 1px dashed rgba(255,255,255,0.05);
+            text-align: center;
         }
 
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 30px rgba(76,201,240,0.45);
+        /* Card actions */
+        .gc-actions {
+            padding: 14px 20px 18px;
+            border-top: 1px solid var(--border);
+            display: flex; gap: 10px; flex-wrap: wrap;
+            align-items: center; justify-content: space-between;
         }
 
-        .btn-danger {
-            background: rgba(255,107,107,0.15);
-            color: var(--danger);
-            border: 1px solid rgba(255,107,107,0.3);
-            box-shadow: none;
+        .btn-verify-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--cyan); text-decoration: none;
+            display: flex; align-items: center; gap: 6px;
+            padding: 7px 12px; border-radius: 7px;
+            border: 1px solid rgba(0,212,255,0.2);
+            background: rgba(0,212,255,0.05);
+            transition: all 0.2s;
         }
+        .btn-verify-link:hover { background: rgba(0,212,255,0.1); border-color: rgba(0,212,255,0.4); }
+        .btn-verify-link svg { width: 12px; height: 12px; }
 
-        .btn-danger:hover {
-            background: rgba(255,107,107,0.25);
-            transform: none;
+        .gc-right-actions { display: flex; gap: 8px; }
+
+        .btn-download {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--green); background: rgba(0,255,179,0.06);
+            border: 1px solid rgba(0,255,179,0.2); border-radius: 7px;
+            padding: 7px 12px; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
         }
+        .btn-download:hover { background: rgba(0,255,179,0.12); border-color: rgba(0,255,179,0.4); }
+        .btn-download svg { width: 11px; height: 11px; }
 
-        /* ===== PERSON LIST ===== */
-        ul {
-            list-style: none;
-            padding-left: 0;
-            margin: 12px 0;
+        .btn-del-gallery {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+            color: rgba(255,68,102,0.6); background: rgba(255,68,102,0.05);
+            border: 1px solid rgba(255,68,102,0.15); border-radius: 7px;
+            padding: 7px 12px; cursor: pointer; transition: all 0.2s;
+            display: flex; align-items: center; gap: 6px;
         }
+        .btn-del-gallery:hover { color: var(--danger); background: rgba(255,68,102,0.1); border-color: rgba(255,68,102,0.35); }
+        .btn-del-gallery svg { width: 11px; height: 11px; }
 
-        li {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            font-size: 14px;
+        /* ── RESPONSIVE ── */
+        @media (max-width: 820px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .nav-center { display: none; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
         }
-
-        li:last-child {
-            border-bottom: none;
-        }
-
-        .muted {
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        .gallery-actions {
-            margin-top: 12px;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        @media (max-width: 500px) {
+            .stats-row { grid-template-columns: 1fr; }
+            .navbar { padding: 0 16px; }
+            .page-wrap { padding: 24px 14px 60px; }
+            .gallery-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-
 <body>
 
-<!-- ===== TOP BAR ===== -->
-<div class="top-bar">
-    <div>
-        Logged in as <b>{{ request.user.username }}</b>
+<div class="bg-grid"></div>
+<div class="bg-radial"></div>
+<div class="scanline"></div>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+    <div class="nav-brand">
+        <div class="logo-mark">
+            <svg viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="6" r="3" stroke="#00d4ff" stroke-width="1.2"/>
+                <circle cx="8" cy="6" r="0.8" fill="#00ffb3"/>
+                <path d="M2 15c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#00d4ff" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <span class="brand-name">FACE<span>FORGE</span></span>
     </div>
 
-    <div>
-        <a href="{% url 'train' %}">Train</a>
+    <div class="nav-center">
+        <a href="{% url 'train' %}" class="nav-link">Train</a>
+        <a href="{% url 'gallery_list' %}" class="nav-link active">Galleries</a>
+        <a href="{% url 'verify' %}" class="nav-link">Verify</a>
+    </div>
 
-        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+    <div class="nav-right">
+        <div class="user-chip">
+            <div class="user-avatar">{{ request.user.username|slice:":1"|upper }}</div>
+            <span class="user-name">{{ request.user.username }}</span>
+        </div>
+        <form class="logout-form" method="post" action="{% url 'logout' %}">
             {% csrf_token %}
-            <button type="submit">Logout</button>
+            <button class="btn-logout" type="submit">Logout</button>
         </form>
     </div>
-</div>
+</nav>
 
-<h2>My Galleries</h2>
+<!-- ── PAGE ── -->
+<div class="page-wrap">
 
-{% if galleries %}
-    {% for g in galleries %}
+    <!-- Page header -->
+    <div class="page-header">
+        <div>
+            <div class="eyebrow">Model Repository</div>
+            <h1>My <span>Galleries</span></h1>
+            <p>Manage your trained face models, persons, and downloads.</p>
+        </div>
+        <a class="btn-new-gallery" href="{% url 'train' %}">
+            <svg viewBox="0 0 13 13" fill="none">
+                <path d="M6.5 1v11M1 6.5h11" stroke="#020509" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            New Gallery
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-label">Total Galleries</div>
+            <div class="stat-value">
+                {% if galleries %}{{ galleries|length }}{% else %}0{% endif %}
+                <span>models</span>
+            </div>
+            <div class="stat-sub">Trained face libraries</div>
+            <svg class="stat-icon" viewBox="0 0 36 36" fill="none">
+                <rect x="3" y="8" width="30" height="22" rx="3" stroke="#00d4ff" stroke-width="1.5"/>
+                <path d="M3 14h30" stroke="#00d4ff" stroke-width="1.2"/>
+                <circle cx="9" cy="11" r="1.2" fill="#00d4ff"/>
+                <circle cx="14" cy="11" r="1.2" fill="#00d4ff"/>
+            </svg>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Status</div>
+            <div class="stat-value" style="font-size:18px; padding-top:6px; color: var(--green);">ACTIVE</div>
+            <div class="stat-sub">Models ready for verification</div>
+            <svg class="stat-icon" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="14" stroke="#00d4ff" stroke-width="1.5"/>
+                <path d="M11 18l5 5 9-10" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Output</div>
+            <div class="stat-value" style="font-size:18px; padding-top:6px;">.PKL <span>file</span></div>
+            <div class="stat-sub">Download anytime</div>
+            <svg class="stat-icon" viewBox="0 0 36 36" fill="none">
+                <path d="M10 4h12l8 8v20H10V4z" stroke="#00d4ff" stroke-width="1.5"/>
+                <path d="M22 4v8h8" stroke="#00d4ff" stroke-width="1.2"/>
+                <path d="M18 16v8M15 21l3 3 3-3" stroke="#00d4ff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Gallery list or empty -->
+    {% if galleries %}
+    <div class="gallery-grid">
+        {% for g in galleries %}
         <div class="gallery-card">
-            <h3>{{ g.name }}</h3>
 
-            <a class="action-link"
-               href="{% url 'verify' %}?gallery_name={{ g.name }}">
-                🔍 Verify Face
-            </a>
+            <!-- Card head -->
+            <div class="gc-head">
+                <div class="gc-head-left">
+                    <div class="gc-avatar">
+                        <svg viewBox="0 0 20 20" fill="none">
+                            <rect x="2" y="5" width="16" height="12" rx="2" stroke="#00d4ff" stroke-width="1.2"/>
+                            <path d="M2 9h16" stroke="#00d4ff" stroke-width="1"/>
+                            <circle cx="6" cy="7" r="0.8" fill="#00ffb3"/>
+                            <circle cx="9" cy="7" r="0.8" fill="#00ffb3"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="gc-name">{{ g.name }}</div>
+                        <div class="gc-meta">Face Gallery Model</div>
+                    </div>
+                </div>
+                <div class="person-badge">
+                    {% if g.persons %}{{ g.persons|length }}{% else %}0{% endif %} person{% if g.persons and g.persons|length != 1 %}s{% endif %}
+                </div>
+            </div>
 
-            {% if g.persons %}
-                <ul>
+            <!-- Person list -->
+            <div class="gc-persons">
+                <div class="persons-label">Enrolled Identities</div>
+
+                {% if g.persons %}
+                <ul class="person-list">
                     {% for p in g.persons %}
-                        <li>
-                            {{ p }}
-
-                            <form method="post"
-                                  action="{% url 'delete_person' %}"
-                                  style="display:inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="gallery_name" value="{{ g.name }}">
-                                <input type="hidden" name="person_name" value="{{ p }}">
-                                <button class="btn-danger">❌ Delete</button>
-                            </form>
-                        </li>
+                    <li class="person-item">
+                        <div class="person-info">
+                            <div class="person-dot"></div>
+                            <span class="person-name">{{ p }}</span>
+                        </div>
+                        <form method="post" action="{% url 'delete_person' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="gallery_name" value="{{ g.name }}">
+                            <input type="hidden" name="person_name" value="{{ p }}">
+                            <button class="btn-del-person" type="submit">Remove</button>
+                        </form>
+                    </li>
                     {% endfor %}
                 </ul>
-            {% else %}
-                <p class="muted">No persons yet</p>
-            {% endif %}
+                {% else %}
+                <div class="no-persons">No identities enrolled yet</div>
+                {% endif %}
+            </div>
 
-            <div class="gallery-actions">
-                <form method="get"
-                      action="{% url 'download_gallery' g.name %}">
-                    <button type="submit">⬇ Download Model</button>
-                </form>
+            <!-- Card actions -->
+            <div class="gc-actions">
+                <a class="btn-verify-link" href="{% url 'verify' %}?gallery_name={{ g.name }}">
+                    <svg viewBox="0 0 12 12" fill="none">
+                        <circle cx="6" cy="6" r="4" stroke="#00d4ff" stroke-width="1.2"/>
+                        <circle cx="6" cy="6" r="1.5" stroke="#00d4ff" stroke-width="1.2"/>
+                        <path d="M6 1v1.5M6 9.5V11M1 6h1.5M9.5 6H11" stroke="#00d4ff" stroke-width="1" stroke-linecap="round"/>
+                    </svg>
+                    Verify Face
+                </a>
 
-                <form method="post"
-                      action="{% url 'delete_gallery' g.name %}"
-                      onsubmit="return confirm('Delete gallery permanently?');">
-                    {% csrf_token %}
-                    <button class="btn-danger">Delete Gallery</button>
-                </form>
+                <div class="gc-right-actions">
+                    <form method="get" action="{% url 'download_gallery' g.name %}">
+                        <button class="btn-download" type="submit">
+                            <svg viewBox="0 0 11 11" fill="none">
+                                <path d="M5.5 1v6M3 5l2.5 2.5L8 5" stroke="#00ffb3" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M1 9h9" stroke="#00ffb3" stroke-width="1.2" stroke-linecap="round"/>
+                            </svg>
+                            Download
+                        </button>
+                    </form>
+
+                    <form method="post" action="{% url 'delete_gallery' g.name %}" onsubmit="return confirm('Delete gallery permanently?');">
+                        {% csrf_token %}
+                        <button class="btn-del-gallery" type="submit">
+                            <svg viewBox="0 0 11 11" fill="none">
+                                <path d="M2 3h7M4.5 3V2h2v1M3 3l.5 6h4L8 3" stroke="#ff4466" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Delete
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    {% endfor %}
-{% else %}
-    <p class="muted">No galleries created yet.</p>
-{% endif %}
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="empty-state">
+        <svg class="empty-icon" viewBox="0 0 64 64" fill="none">
+            <rect x="6" y="14" width="52" height="38" rx="5" stroke="#00d4ff" stroke-width="1.5"/>
+            <path d="M6 24h52" stroke="#00d4ff" stroke-width="1.2"/>
+            <circle cx="32" cy="42" r="8" stroke="#00d4ff" stroke-width="1.2"/>
+            <circle cx="32" cy="42" r="2.5" fill="#00d4ff" opacity="0.4"/>
+            <path d="M32 30v4M32 50v4M20 42h4M40 42h4" stroke="#00d4ff" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+        <div class="empty-title">NO GALLERIES FOUND</div>
+        <div class="empty-sub">You haven't trained any face galleries yet.<br>Start by uploading images and assigning labels.</div>
+        <a class="btn-empty" href="{% url 'train' %}">Train Your First Gallery</a>
+    </div>
+    {% endif %}
+
+</div>
 
 </body>
 </html>
