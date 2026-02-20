@@ -3,208 +3,762 @@
 <head>
     <meta charset="UTF-8">
     <title>Train Face Gallery • Face Model Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&family=Syne:wght@300;400;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet"/>
 
     <style>
         :root {
-            --bg-dark: #0b0f1a;
-            --card-dark: #12182b;
-            --accent: #4cc9f0;
-            --text-main: #eaeaff;
-            --text-muted: #9aa4c7;
-            --danger: #ff6b6b;
-            --success: #5eead4;
+            --bg: #020509;
+            --surface: #060d18;
+            --surface2: #0a1628;
+            --cyan: #00d4ff;
+            --green: #00ffb3;
+            --amber: #ffaa00;
+            --danger: #ff4466;
+            --text: #d6eeff;
+            --text-muted: #4a7a99;
+            --border: rgba(0, 212, 255, 0.12);
+            --border-active: rgba(0, 212, 255, 0.5);
         }
 
-        * {
-            box-sizing: border-box;
-            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            margin: 0;
             min-height: 100vh;
-            background: radial-gradient(circle at top, #11183a, var(--bg-dark));
-            color: var(--text-main);
-            padding: 30px;
+            background: var(--bg);
+            font-family: 'Syne', sans-serif;
+            color: var(--text);
+            overflow-x: hidden;
         }
 
-        /* ===== TOP BAR ===== */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
+        /* ── BACKGROUND ── */
+        .bg-grid {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridDrift 22s linear infinite;
+            pointer-events: none; z-index: 0;
+        }
+        @keyframes gridDrift { to { transform: translateY(40px); } }
+
+        .bg-radial {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse 70% 45% at 50% 0%, rgba(0,212,255,0.09) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 35% at 90% 80%, rgba(0,255,179,0.05) 0%, transparent 60%);
         }
 
-        .top-bar b {
-            color: var(--accent);
+        .scanline {
+            position: fixed; top: -2px; left: 0; width: 100%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            animation: scan 8s linear infinite; opacity: 0.2; pointer-events: none; z-index: 1;
+        }
+        @keyframes scan { to { top: 100vh; } }
+
+        /* ── NAVBAR ── */
+        .navbar {
+            position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 32px;
+            height: 60px;
+            background: rgba(2,5,9,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            animation: fadeDown 0.6s ease both;
+        }
+        @keyframes fadeDown { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+
+        .nav-brand {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .nav-brand .logo-mark {
+            width: 28px; height: 28px; position: relative;
+            border: 1px solid rgba(0,212,255,0.4);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,212,255,0.06);
+        }
+        .nav-brand .logo-mark svg { width: 16px; height: 16px; }
+        .nav-brand .brand-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 14px; font-weight: 700;
+            color: #fff; letter-spacing: 2px;
+        }
+        .nav-brand .brand-name span { color: var(--cyan); }
+
+        .nav-center {
+            display: flex; align-items: center; gap: 4px;
+        }
+        .nav-link {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--text-muted); text-decoration: none;
+            padding: 6px 14px; border-radius: 6px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--cyan);
+            background: rgba(0,212,255,0.06);
+            border-color: rgba(0,212,255,0.15);
+        }
+        .nav-link.active {
+            color: var(--cyan);
         }
 
-        .top-bar a,
-        .top-bar button {
-            background: none;
-            border: none;
-            color: var(--accent);
-            font-size: 14px;
-            cursor: pointer;
-            padding: 0;
-            margin-left: 12px;
+        .nav-right {
+            display: flex; align-items: center; gap: 12px;
         }
 
-        .top-bar a:hover,
-        .top-bar button:hover {
-            text-decoration: underline;
+        .user-chip {
+            display: flex; align-items: center; gap: 8px;
+            padding: 5px 12px 5px 8px;
+            background: rgba(0,212,255,0.06);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+        }
+        .user-avatar {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron', monospace; font-size: 9px; font-weight: 700; color: #020509;
+        }
+        .user-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; color: var(--text); letter-spacing: 1px;
         }
 
-        /* ===== PAGE TITLE ===== */
-        h2 {
-            margin-bottom: 20px;
-            color: var(--accent);
-            letter-spacing: 0.5px;
+        .logout-form { display: inline; }
+        .btn-logout {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--text-muted); background: none;
+            border: 1px solid var(--border); border-radius: 6px;
+            padding: 6px 12px; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover { color: var(--danger); border-color: rgba(255,68,102,0.35); background: rgba(255,68,102,0.06); }
+
+        /* ── MAIN LAYOUT ── */
+        .page-wrap {
+            position: relative; z-index: 2;
+            max-width: 1100px; margin: 0 auto;
+            padding: 40px 24px 80px;
         }
 
-        /* ===== CARD ===== */
+        /* ── PAGE HEADER ── */
+        .page-header {
+            display: flex; align-items: flex-end; justify-content: space-between;
+            margin-bottom: 40px;
+            animation: fadeUp 0.7s 0.1s ease both;
+        }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+        .page-title-group .eyebrow {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: 3px; text-transform: uppercase;
+            color: var(--cyan); margin-bottom: 8px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .page-title-group .eyebrow::before {
+            content: ''; width: 20px; height: 1px; background: var(--cyan);
+        }
+        .page-title-group h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 28px; font-weight: 700; color: #fff;
+            letter-spacing: 1px; line-height: 1.2;
+        }
+        .page-title-group h1 span { color: var(--cyan); }
+        .page-title-group p {
+            margin-top: 8px; font-size: 14px; color: var(--text-muted); font-weight: 300;
+        }
+
+        /* ── STATS ROW ── */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 16px; margin-bottom: 36px;
+            animation: fadeUp 0.7s 0.2s ease both;
+        }
+
+        .stat-card {
+            background: rgba(6,13,24,0.8);
+            border: 1px solid var(--border);
+            border-radius: 14px; padding: 18px 20px;
+            position: relative; overflow: hidden;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .stat-card:hover {
+            border-color: rgba(0,212,255,0.3);
+            box-shadow: 0 0 30px rgba(0,212,255,0.07);
+        }
+        .stat-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-active), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .stat-card:hover::before { opacity: 1; }
+        .stat-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--text-muted); margin-bottom: 10px;
+        }
+        .stat-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 26px; font-weight: 700; color: #fff;
+        }
+        .stat-value span { color: var(--cyan); font-size: 14px; margin-left: 4px; }
+        .stat-sub {
+            font-size: 11px; color: var(--text-muted);
+            margin-top: 4px; font-weight: 300;
+        }
+        .stat-icon {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            width: 36px; height: 36px; opacity: 0.12;
+        }
+
+        /* ── MAIN GRID ── */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        /* ── TRAIN CARD ── */
         .train-card {
-            max-width: 520px;
-            background: linear-gradient(180deg, #151c36, var(--card-dark));
-            padding: 28px;
-            border-radius: 16px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.6);
-            border: 1px solid rgba(76,201,240,0.15);
+            background: rgba(6,13,24,0.9);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            animation: fadeUp 0.7s 0.3s ease both;
+            position: relative;
+        }
+        .train-card::before {
+            content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            opacity: 0.5;
         }
 
-        /* ===== FORM ===== */
+        .card-top {
+            padding: 24px 28px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 14px;
+        }
+        .card-icon-box {
+            width: 42px; height: 42px;
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .card-icon-box svg { width: 20px; height: 20px; }
+        .card-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 14px; font-weight: 700; color: #fff; letter-spacing: 1px;
+        }
+        .card-subtitle {
+            font-size: 12px; color: var(--text-muted); margin-top: 3px; font-weight: 300;
+        }
+
+        /* ── FORM ── */
+        .form-body { padding: 28px; }
+
         form {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            display: flex; flex-direction: column; gap: 20px;
         }
 
-        label {
-            font-size: 13px;
+        .field {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .field label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+            color: var(--cyan); opacity: 0.7;
+        }
+
+        .input-wrap { position: relative; }
+        .input-icon {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            width: 15px; height: 15px; opacity: 0.35; pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .input-wrap:focus-within .input-icon { opacity: 0.85; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: rgba(0,8,18,0.7);
+            color: var(--text);
+            font-family: 'Syne', sans-serif;
+            font-size: 14px; outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+        }
+        input[type="text"]::placeholder { color: rgba(74,122,153,0.45); font-size: 13px; }
+        input[type="text"]:focus {
+            border-color: var(--border-active);
+            background: rgba(0,212,255,0.03);
+            box-shadow: 0 0 0 3px rgba(0,212,255,0.07), 0 0 20px rgba(0,212,255,0.06);
+        }
+
+        /* File drop zone */
+        .drop-zone {
+            border: 1px dashed rgba(0,212,255,0.25);
+            border-radius: 12px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(0,212,255,0.02);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: rgba(0,212,255,0.55);
+            background: rgba(0,212,255,0.05);
+            box-shadow: 0 0 30px rgba(0,212,255,0.06);
+        }
+        .drop-zone input[type="file"] {
+            position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+        }
+        .drop-icon { margin: 0 auto 12px; width: 36px; height: 36px; opacity: 0.5; }
+        .drop-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--text); margin-bottom: 6px;
+        }
+        .drop-sub { font-size: 11px; color: var(--text-muted); font-weight: 300; }
+        .drop-formats {
+            display: flex; justify-content: center; gap: 8px; margin-top: 12px;
+        }
+        .fmt-tag {
+            font-family: 'JetBrains Mono', monospace; font-size: 9px;
+            letter-spacing: 1px; text-transform: uppercase;
+            padding: 3px 8px; border-radius: 4px;
+            background: rgba(0,212,255,0.06);
+            border: 1px solid rgba(0,212,255,0.15);
             color: var(--text-muted);
         }
-
-        input[type="text"],
-        input[type="file"] {
-            width: 100%;
-            padding: 12px 14px;
-            border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.12);
-            background: #0e1430;
-            color: var(--text-main);
-            font-size: 14px;
-            outline: none;
-        }
-
-        input[type="file"] {
-            padding: 10px;
-        }
-
-        input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(76,201,240,0.15);
-        }
-
-        /* ===== BUTTON ===== */
-        button {
+        .file-count {
             margin-top: 10px;
-            padding: 12px;
-            border-radius: 12px;
-            border: none;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            color: #08121f;
-            background: linear-gradient(135deg, #4cc9f0, #5eead4);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-            box-shadow: 0 10px 25px rgba(76,201,240,0.35);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: 1px;
+            color: var(--green); display: none;
         }
 
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 14px 35px rgba(76,201,240,0.45);
+        /* Submit button */
+        .btn-train {
+            padding: 15px;
+            border-radius: 12px; border: none;
+            font-family: 'Orbitron', monospace;
+            font-size: 12px; font-weight: 700;
+            letter-spacing: 3px; text-transform: uppercase;
+            cursor: pointer; color: #020509;
+            background: linear-gradient(135deg, #00d4ff 0%, #00ffb3 100%);
+            position: relative; overflow: hidden;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 0 30px rgba(0,212,255,0.3), 0 8px 25px rgba(0,212,255,0.2);
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
+        .btn-train::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            transition: left 0.4s;
+        }
+        .btn-train:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(0,212,255,0.45), 0 14px 40px rgba(0,212,255,0.25); }
+        .btn-train:hover::before { left: 100%; }
+        .btn-train svg { width: 16px; height: 16px; flex-shrink: 0; }
 
-        /* ===== MESSAGES ===== */
-        .success {
-            margin-top: 20px;
-            background: rgba(94,234,212,0.15);
-            color: var(--success);
-            padding: 14px;
+        /* ── MESSAGES ── */
+        .msg {
+            margin: 0 28px 28px;
+            padding: 14px 16px;
             border-radius: 10px;
-            font-size: 14px;
-            border: 1px solid rgba(94,234,212,0.3);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: 0.5px; line-height: 1.7;
+            display: flex; gap: 10px; align-items: flex-start;
+        }
+        .msg svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 1px; }
+        .msg.success {
+            background: rgba(0,255,179,0.07);
+            border: 1px solid rgba(0,255,179,0.2);
+            color: var(--green);
+        }
+        .msg.error {
+            background: rgba(255,68,102,0.07);
+            border: 1px solid rgba(255,68,102,0.2);
+            color: #ff7090;
         }
 
-        .error {
-            margin-top: 20px;
-            background: rgba(255,107,107,0.15);
-            color: var(--danger);
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 14px;
-            border: 1px solid rgba(255,107,107,0.3);
+        /* ── SIDE PANEL ── */
+        .side-panel {
+            display: flex; flex-direction: column; gap: 16px;
+            animation: fadeUp 0.7s 0.4s ease both;
+        }
+
+        .side-card {
+            background: rgba(6,13,24,0.9);
+            border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px;
+            position: relative; overflow: hidden;
+        }
+        .side-card-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+            color: var(--text); margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .side-card-title::before {
+            content: ''; width: 3px; height: 12px;
+            background: var(--cyan); border-radius: 2px;
+        }
+
+        /* How it works steps */
+        .how-steps { display: flex; flex-direction: column; gap: 14px; }
+        .how-step {
+            display: flex; gap: 12px; align-items: flex-start;
+        }
+        .step-num {
+            width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0;
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--cyan);
+        }
+        .step-text { font-size: 12px; color: var(--text-muted); line-height: 1.5; font-weight: 300; }
+        .step-text strong { color: var(--text); font-weight: 600; display: block; margin-bottom: 2px; }
+
+        /* Tips */
+        .tips-list { display: flex; flex-direction: column; gap: 10px; }
+        .tip {
+            display: flex; gap: 8px; align-items: flex-start;
+            font-size: 12px; color: var(--text-muted); line-height: 1.5; font-weight: 300;
+        }
+        .tip-dot { width: 5px; height: 5px; background: var(--amber); border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+
+        /* Pipeline visual */
+        .pipeline {
+            display: flex; align-items: center; gap: 0;
+            margin-top: 4px;
+        }
+        .pipe-step {
+            flex: 1; text-align: center;
+        }
+        .pipe-box {
+            padding: 6px 4px;
+            background: rgba(0,212,255,0.05);
+            border: 1px solid rgba(0,212,255,0.15);
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8px; letter-spacing: 1px; text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .pipe-step.active .pipe-box {
+            background: rgba(0,212,255,0.12);
+            border-color: rgba(0,212,255,0.4);
+            color: var(--cyan);
+            box-shadow: 0 0 10px rgba(0,212,255,0.1);
+        }
+        .pipe-arrow {
+            font-size: 8px; color: var(--border-active);
+            margin: 0 2px; padding-bottom: 2px;
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 820px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .nav-center { display: none; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+        }
+        @media (max-width: 500px) {
+            .stats-row { grid-template-columns: 1fr; }
+            .navbar { padding: 0 16px; }
+            .page-wrap { padding: 24px 14px 60px; }
         }
     </style>
 </head>
-
 <body>
 
-<!-- ===== TOP BAR ===== -->
-<div class="top-bar">
-    <div>
-        Logged in as <b>{{ request.user.username }}</b>
+<div class="bg-grid"></div>
+<div class="bg-radial"></div>
+<div class="scanline"></div>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+    <div class="nav-brand">
+        <div class="logo-mark">
+            <svg viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="6" r="3" stroke="#00d4ff" stroke-width="1.2"/>
+                <circle cx="8" cy="6" r="0.8" fill="#00ffb3"/>
+                <path d="M2 15c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#00d4ff" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <span class="brand-name">FACE<span>FORGE</span></span>
     </div>
 
-    <div>
-        <a href="{% url 'gallery_list' %}">My Galleries</a>
+    <div class="nav-center">
+        <a href="{% url 'train' %}" class="nav-link active">Train</a>
+        <a href="{% url 'gallery_list' %}" class="nav-link">Galleries</a>
+        <a href="{% url 'verify' %}" class="nav-link">Verify</a>
+    </div>
 
-        <form method="post" action="/logout/" style="display:inline;">
+    <div class="nav-right">
+        <div class="user-chip">
+            <div class="user-avatar">{{ request.user.username|slice:":1"|upper }}</div>
+            <span class="user-name">{{ request.user.username }}</span>
+        </div>
+        <form class="logout-form" method="post" action="/logout/">
             {% csrf_token %}
-            <button type="submit">Logout</button>
+            <button class="btn-logout" type="submit">Logout</button>
         </form>
+    </div>
+</nav>
 
-        <a href="{% url 'verify' %}">Verify Face</a>
+<!-- ── PAGE ── -->
+<div class="page-wrap">
+
+    <!-- Page header -->
+    <div class="page-header">
+        <div class="page-title-group">
+            <div class="eyebrow">Model Training Console</div>
+            <h1>Train a <span>Face Gallery</span></h1>
+            <p>Upload images, assign identities, and generate your personalized recognition model.</p>
+        </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-label">Current Step</div>
+            <div class="stat-value">01 <span>/ 04</span></div>
+            <div class="stat-sub">Upload &amp; Train</div>
+            <svg class="stat-icon" viewBox="0 0 36 36" fill="none">
+                <circle cx="18" cy="18" r="16" stroke="#00d4ff" stroke-width="1.5"/>
+                <path d="M18 10v8l5 3" stroke="#00d4ff" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Min. Images</div>
+            <div class="stat-value">5 <span>imgs</span></div>
+            <div class="stat-sub">Recommended per person</div>
+            <svg class="stat-icon" viewBox="0 0 36 36" fill="none">
+                <rect x="4" y="8" width="28" height="20" rx="3" stroke="#00d4ff" stroke-width="1.5"/>
+                <circle cx="13" cy="16" r="3" stroke="#00d4ff" stroke-width="1.2"/>
+                <path d="M4 26l7-6 6 5 4-4 11 5" stroke="#00d4ff" stroke-width="1.2"/>
+            </svg>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Output Format</div>
+            <div class="stat-value" style="font-size:18px; padding-top:4px;">.PKL <span>model</span></div>
+            <div class="stat-sub">Downloadable trained file</div>
+            <svg class="stat-icon" viewBox="0 0 36 36" fill="none">
+                <path d="M10 4h12l8 8v20H10V4z" stroke="#00d4ff" stroke-width="1.5"/>
+                <path d="M22 4v8h8" stroke="#00d4ff" stroke-width="1.2"/>
+                <path d="M18 16v8M15 21l3 3 3-3" stroke="#00d4ff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+    </div>
+
+    <!-- Main grid -->
+    <div class="main-grid">
+
+        <!-- Train form card -->
+        <div class="train-card">
+            <div class="card-top">
+                <div class="card-icon-box">
+                    <svg viewBox="0 0 20 20" fill="none">
+                        <circle cx="10" cy="7" r="3.5" stroke="#00d4ff" stroke-width="1.2"/>
+                        <circle cx="10" cy="7" r="1" fill="#00ffb3"/>
+                        <path d="M3 18c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#00d4ff" stroke-width="1.2" stroke-linecap="round"/>
+                        <path d="M14 3l2 2-2 2" stroke="#00ffb3" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 3L4 5l2 2" stroke="#00ffb3" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="card-title">NEW TRAINING SESSION</div>
+                    <div class="card-subtitle">Configure your gallery and upload face images to begin</div>
+                </div>
+            </div>
+
+            <div class="form-body">
+                <form method="post" action="{% url 'train' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="field">
+                        <label>Gallery Name</label>
+                        <div class="input-wrap">
+                            <svg class="input-icon" viewBox="0 0 15 15" fill="none">
+                                <rect x="1.5" y="3" width="12" height="10" rx="1.5" stroke="#00d4ff" stroke-width="1.1"/>
+                                <path d="M5 3V2a2 2 0 014 0v1" stroke="#00d4ff" stroke-width="1.1"/>
+                                <path d="M4.5 8h6M4.5 11h4" stroke="#00d4ff" stroke-width="1" stroke-linecap="round"/>
+                            </svg>
+                            <input type="text" name="gallery_name" placeholder="e.g. Family_2024" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Person Name / Label</label>
+                        <div class="input-wrap">
+                            <svg class="input-icon" viewBox="0 0 15 15" fill="none">
+                                <circle cx="7.5" cy="5" r="2.5" stroke="#00d4ff" stroke-width="1.1"/>
+                                <path d="M2 14c0-3.038 2.462-5.5 5.5-5.5S13 10.962 13 14" stroke="#00d4ff" stroke-width="1.1" stroke-linecap="round"/>
+                            </svg>
+                            <input type="text" name="person_name" placeholder="e.g. John_Doe" required>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Face Images</label>
+                        <div class="drop-zone" id="dropZone">
+                            <input type="file" name="images" multiple accept="image/*" required id="fileInput">
+                            <svg class="drop-icon" viewBox="0 0 36 36" fill="none">
+                                <rect x="3" y="7" width="30" height="22" rx="3" stroke="#00d4ff" stroke-width="1.3"/>
+                                <circle cx="13" cy="16" r="3.5" stroke="#00d4ff" stroke-width="1.2"/>
+                                <circle cx="13" cy="16" r="1" fill="#00ffb3"/>
+                                <path d="M3 25l8-7 7 6 4-4 11 6" stroke="#00d4ff" stroke-width="1.2"/>
+                                <path d="M27 3v8M23 7l4-4 4 4" stroke="#00ffb3" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div class="drop-title">Drop face images here</div>
+                            <div class="drop-sub">or click to browse your files</div>
+                            <div class="drop-formats">
+                                <span class="fmt-tag">JPG</span>
+                                <span class="fmt-tag">PNG</span>
+                                <span class="fmt-tag">WEBP</span>
+                                <span class="fmt-tag">BMP</span>
+                            </div>
+                            <div class="file-count" id="fileCount"></div>
+                        </div>
+                    </div>
+
+                    <button class="btn-train" type="submit">
+                        <svg viewBox="0 0 16 16" fill="none">
+                            <path d="M8 2v5l3 2" stroke="#020509" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M13.5 10.5A6 6 0 112 8" stroke="#020509" stroke-width="1.5" stroke-linecap="round"/>
+                            <path d="M13.5 7v3.5H10" stroke="#020509" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        LAUNCH TRAINING
+                    </button>
+                </form>
+            </div>
+
+            {% if success %}
+            <div class="msg success">
+                <svg viewBox="0 0 14 14" fill="none">
+                    <circle cx="7" cy="7" r="6" stroke="#00ffb3" stroke-width="1.2"/>
+                    <path d="M4.5 7l2 2 3.5-3.5" stroke="#00ffb3" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div>
+                    {{ success }}<br>
+                    <span style="opacity:0.7;">Gallery: <strong>{{ gallery }}</strong> &nbsp;|&nbsp; Person: <strong>{{ person }}</strong> &nbsp;|&nbsp; Total persons: <strong>{{ count }}</strong></span>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div class="msg error">
+                <svg viewBox="0 0 14 14" fill="none">
+                    <circle cx="7" cy="7" r="6" stroke="#ff4466" stroke-width="1.2"/>
+                    <path d="M7 4v3.5M7 9.5v.5" stroke="#ff4466" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+                <div>{{ error }}</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Side panel -->
+        <div class="side-panel">
+
+            <!-- Pipeline status -->
+            <div class="side-card">
+                <div class="side-card-title">Training Pipeline</div>
+                <div class="pipeline">
+                    <div class="pipe-step active">
+                        <div class="pipe-box">Upload</div>
+                    </div>
+                    <div class="pipe-arrow">›</div>
+                    <div class="pipe-step active">
+                        <div class="pipe-box">Label</div>
+                    </div>
+                    <div class="pipe-arrow">›</div>
+                    <div class="pipe-step">
+                        <div class="pipe-box">Train</div>
+                    </div>
+                    <div class="pipe-arrow">›</div>
+                    <div class="pipe-step">
+                        <div class="pipe-box">Export</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How it works -->
+            <div class="side-card">
+                <div class="side-card-title">How It Works</div>
+                <div class="how-steps">
+                    <div class="how-step">
+                        <div class="step-num">01</div>
+                        <div class="step-text"><strong>Name your gallery</strong>A unique collection that groups all people in one model.</div>
+                    </div>
+                    <div class="how-step">
+                        <div class="step-num">02</div>
+                        <div class="step-text"><strong>Set a person label</strong>The identity tag assigned to the uploaded face images.</div>
+                    </div>
+                    <div class="how-step">
+                        <div class="step-num">03</div>
+                        <div class="step-text"><strong>Upload face images</strong>Multiple clear, well-lit photos improve accuracy significantly.</div>
+                    </div>
+                    <div class="how-step">
+                        <div class="step-num">04</div>
+                        <div class="step-text"><strong>Download your model</strong>Receive a trained .pkl model file ready for deployment.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="side-card">
+                <div class="side-card-title">Image Tips</div>
+                <div class="tips-list">
+                    <div class="tip"><div class="tip-dot"></div>Use at least 5–10 photos per person for best results</div>
+                    <div class="tip"><div class="tip-dot"></div>Ensure face is clearly visible and well lit</div>
+                    <div class="tip"><div class="tip-dot"></div>Vary angles slightly — front, slight left, slight right</div>
+                    <div class="tip"><div class="tip-dot"></div>Avoid heavy filters, sunglasses, or masks</div>
+                    <div class="tip"><div class="tip-dot"></div>Use JPG or PNG for highest compatibility</div>
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
 
-<h2>Train Face Gallery</h2>
+<script>
+    // File drop zone interaction
+    const zone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileCount = document.getElementById('fileCount');
 
-<div class="train-card">
-    <form method="post"
-          action="{% url 'train' %}"
-          enctype="multipart/form-data">
+    fileInput.addEventListener('change', () => {
+        const n = fileInput.files.length;
+        if (n > 0) {
+            fileCount.style.display = 'block';
+            fileCount.textContent = `✓ ${n} image${n > 1 ? 's' : ''} selected`;
+        }
+    });
 
-        {% csrf_token %}
-
-        <label>Gallery Name</label>
-        <input type="text" name="gallery_name" required>
-
-        <label>Person Name</label>
-        <input type="text" name="person_name" required>
-
-        <label>Images</label>
-        <input type="file" name="images" multiple required>
-
-        <button type="submit">Train</button>
-    </form>
-
-    {% if success %}
-        <div class="success">
-            ✅ {{ success }}<br>
-            Gallery: {{ gallery }}<br>
-            Person: {{ person }}<br>
-            Total persons: {{ count }}
-        </div>
-    {% endif %}
-
-    {% if error %}
-        <div class="error">
-            ❌ {{ error }}
-        </div>
-    {% endif %}
-</div>
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', (e) => {
+        e.preventDefault(); zone.classList.remove('dragover');
+        fileInput.files = e.dataTransfer.files;
+        const n = e.dataTransfer.files.length;
+        fileCount.style.display = 'block';
+        fileCount.textContent = `✓ ${n} image${n > 1 ? 's' : ''} selected`;
+    });
+</script>
 
 </body>
 </html>
