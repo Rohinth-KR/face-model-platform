@@ -1,4 +1,4 @@
-# Personalized Face Recognition Platform
+# Personalized Face Recognition Platform - FACEFORGE
 
 A **production-oriented, multi-user face recognition web platform** that allows users to create personalized face galleries, train identity-specific face models using embedding-based similarity learning, and verify faces without retraining classifiers.
 
